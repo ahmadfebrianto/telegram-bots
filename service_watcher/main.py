@@ -4,7 +4,7 @@ from asyncio import sleep
 from telethon import TelegramClient, events
 
 
-class ServiceWatcher:
+class Service:
     @property
     def service_list(self):
         with open("services.txt") as f:
@@ -33,24 +33,32 @@ class ServiceWatcher:
         status = os.system(f"systemctl is-active --quiet {service_name}")
         return status == 0
 
-    def build_message(self, _type="status"):
-        if not self.services_status:
-            return "No services to watch."
 
-        if _type == "status":
-            message_title = "**Services Status**"
+class Message:
+    def build(self, services_status: dict, message_type="status"):
+        if message_type == "status":
+            message_title = self.__text_bold("Services Status")
             message = f"{message_title}\n\n"
-            for service, status in self.services_status.items():
-                message += f"- {service} ::: {'__running__' if status else '__not running__'}\n"
+            for service, status in services_status.items():
+                if status:
+                    message += f"- {service} ::: {self.__text_italic('running')}\n"
+                else:
+                    message += f"- {service} ::: {self.__text_italic('not running')}\n"
 
-        elif _type == "alert":
-            message_title = "**Services Alert**"
+        elif message_type == "alert":
+            message_title = self.__text_bold("Services Status Alert")
             message = f"{message_title}\n\n"
-            for service, status in self.services_status.items():
+            for service, status in services_status.items():
                 if not status:
-                    message += f"- {service} ::: __not running__\n"
+                    message += f"- {service} ::: {self.__text_italic('not running')}\n"
 
         return message
+
+    def __text_bold(self, text):
+        return f"**{text}**"
+
+    def __text_italic(self, text):
+        return f"__{text}__"
 
 
 def main():
@@ -60,14 +68,14 @@ def main():
     user_id = os.environ.get("TG_USER_ID")
 
     client = TelegramClient("svcwatcher", api_id, api_hash).start(bot_token=bot_token)
-    watcher = ServiceWatcher()
+    watcher = Service()
 
     @client.on(events.NewMessage(pattern="/status"))
     async def handler(event):
         if event.sender_id != int(user_id):
             return
 
-        message = watcher.build_message()
+        message = Message().build(watcher.services_status)
         await event.respond(message)
 
     @client.on(events.NewMessage(pattern="/start"))
@@ -78,9 +86,9 @@ def main():
         while True:
             if watcher.services_status:
                 if not all(watcher.services_status.values()):
-                    message = watcher.build_message(_type="alert")
+                    message = Message().build(watcher.services_status, "alert")
             else:
-                message = watcher.build_message()
+                message = "No services to watch."
 
             await event.respond(message)
             await sleep(5)
