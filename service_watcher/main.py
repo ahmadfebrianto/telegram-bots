@@ -35,20 +35,26 @@ class Service:
 
 
 class Message:
-    def build(self, services_status: dict, message_type="status"):
-        if message_type == "status":
+    def __new__(cls, services_status, message_type="status") -> str:
+        instance = super().__new__(cls)
+        instance.services_status = services_status
+        instance.message_type = message_type
+        return instance.__build()
+
+    def __build(self):
+        if self.message_type == "status":
             message_title = self.__text_bold("Services Status")
             message = f"{message_title}\n\n"
-            for service, status in services_status.items():
+            for service, status in self.services_status.items():
                 if status:
                     message += f"- {service} ::: {self.__text_italic('running')}\n"
                 else:
                     message += f"- {service} ::: {self.__text_italic('not running')}\n"
 
-        elif message_type == "alert":
+        elif self.message_type == "alert":
             message_title = self.__text_bold("Services Status Alert")
             message = f"{message_title}\n\n"
-            for service, status in services_status.items():
+            for service, status in self.services_status.items():
                 if not status:
                     message += f"- {service} ::: {self.__text_italic('not running')}\n"
 
@@ -75,7 +81,7 @@ def main():
         if event.sender_id != int(user_id):
             return
 
-        message = Message().build(watcher.services_status)
+        message = Message(watcher.services_status)
         await event.respond(message)
 
     @client.on(events.NewMessage(pattern="/start"))
@@ -86,7 +92,7 @@ def main():
         while True:
             if watcher.services_status:
                 if not all(watcher.services_status.values()):
-                    message = Message().build(watcher.services_status, "alert")
+                    message = Message(watcher.services_status, "alert")
             else:
                 message = "No services to watch."
 
