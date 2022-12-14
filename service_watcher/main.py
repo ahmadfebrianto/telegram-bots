@@ -5,11 +5,8 @@ from telethon import TelegramClient, events
 
 
 class ServiceWatcher:
-    def __init__(self) -> None:
-        pass
-
-    @staticmethod
-    def get_services_list():
+    @property
+    def service_list(self):
         with open("services.txt") as f:
             # Parse comments and empty lines
             services = [
@@ -17,25 +14,41 @@ class ServiceWatcher:
                 for line in f.readlines()
                 if line.strip() and not line.strip().startswith("#")
             ]
-        return services
+
+            return services
+
+    @property
+    def services_status(self):
+        if not self.service_list:
+            return None
+
+        _services_status = {}
+        for service in self.service_list:
+            _services_status[service] = self.is_service_running(service)
+
+        return _services_status
 
     @staticmethod
     def is_service_running(service_name):
         status = os.system(f"systemctl is-active --quiet {service_name}")
         return status == 0
 
-    def get_services_status(self):
-        services = self.get_services_list()
-        if not services:
-            return "No services to check."
+    def build_message(self, _type="status"):
+        if not self.services_status:
+            return "No services to watch."
 
-        message = "**Service Status**\n"
+        if _type == "status":
+            message_title = "**Services Status**"
+            message = f"{message_title}\n\n"
+            for service, status in self.services_status.items():
+                message += f"- {service} ::: {'__running__' if status else '__not running__'}\n"
 
-        for service in services:
-            if self.is_service_running(service):
-                message += f"\n- `{service}` ::: __running__. "
-            else:
-                message += f"\n- `{service}` ::: __not running__. "
+        elif _type == "alert":
+            message_title = "**Services Alert**"
+            message = f"{message_title}\n\n"
+            for service, status in self.services_status.items():
+                if not status:
+                    message += f"- {service} ::: __not running__\n"
 
         return message
 
@@ -54,8 +67,23 @@ def main():
         if event.sender_id != int(user_id):
             return
 
-        message = watcher.get_services_status()
+        message = watcher.build_message()
         await event.respond(message)
+
+    @client.on(events.NewMessage(pattern="/start"))
+    async def handler(event):
+        if event.sender_id != int(user_id):
+            return
+
+        while True:
+            if watcher.services_status:
+                if not all(watcher.services_status.values()):
+                    message = watcher.build_message(_type="alert")
+            else:
+                message = watcher.build_message()
+
+            await event.respond(message)
+            await sleep(5)
 
     client.start()
     client.run_until_disconnected()
