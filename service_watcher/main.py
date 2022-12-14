@@ -6,7 +6,7 @@ from telethon import TelegramClient, events
 
 class Service:
     @property
-    def service_list(self):
+    def list(self):
         with open("services.txt") as f:
             # Parse comments and empty lines
             services = [
@@ -18,12 +18,12 @@ class Service:
             return services
 
     @property
-    def services_status(self):
-        if not self.service_list:
+    def status(self):
+        if not self.list:
             return None
 
         _services_status = {}
-        for service in self.service_list:
+        for service in self.list:
             _services_status[service] = self.is_service_running(service)
 
         return _services_status
@@ -67,41 +67,58 @@ class Message:
         return f"__{text}__"
 
 
-def main():
-    api_id = os.environ.get("TG_API_ID")
-    api_hash = os.environ.get("TG_API_HASH")
-    bot_token = os.environ.get("TG_BOT_SVCWATCH")
-    user_id = os.environ.get("TG_USER_ID")
+class Bot:
+    def __init__(self) -> None:
+        api_id = os.environ.get("TG_API_ID")
+        api_hash = os.environ.get("TG_API_HASH")
+        bot_token = os.environ.get("TG_BOT_SVCWATCH")
 
-    client = TelegramClient("svcwatcher", api_id, api_hash).start(bot_token=bot_token)
-    watcher = Service()
+        self.user_id = os.environ.get("TG_USER_ID")
 
-    @client.on(events.NewMessage(pattern="/status"))
-    async def handler(event):
-        if event.sender_id != int(user_id):
+        self.client = TelegramClient("svcwatcher", api_id, api_hash).start(
+            bot_token=bot_token
+        )
+        self.service = Service()
+        self.running = False
+
+    async def on_status(self, event):
+        if event.sender_id != int(self.user_id):
             return
 
-        message = Message(watcher.services_status)
+        message = Message(self.service.status)
         await event.respond(message)
 
-    @client.on(events.NewMessage(pattern="/start"))
-    async def handler(event):
-        if event.sender_id != int(user_id):
+    async def on_start(self, event):
+        if event.sender_id != int(self.user_id):
             return
 
+        if self.running:
+            await event.respond("Watcher is already running.")
+            return
+
+        self.running = True
+
         while True:
-            if watcher.services_status:
-                if not all(watcher.services_status.values()):
-                    message = Message(watcher.services_status, "alert")
+            if self.service.status:
+                if not all(self.service.status.values()):
+                    message = Message(self.service.status, "alert")
             else:
                 message = "No services to watch."
 
             await event.respond(message)
             await sleep(5)
 
-    client.start()
-    client.run_until_disconnected()
+    def start(self):
+        self.client.add_event_handler(
+            self.on_status, events.NewMessage(pattern="/status")
+        )
+        self.client.add_event_handler(
+            self.on_start, events.NewMessage(pattern="/start")
+        )
+        self.client.start()
+        self.client.run_until_disconnected()
 
 
 if __name__ == "__main__":
-    main()
+    bot = Bot()
+    bot.start()
