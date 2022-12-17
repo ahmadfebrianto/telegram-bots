@@ -102,6 +102,8 @@ class Bot:
             if self.service.status:
                 if not all(self.service.status.values()):
                     message = Message(self.service.status, "alert")
+                else:
+                    continue
             else:
                 message = "No services to watch."
 
@@ -122,3 +124,5 @@ class Bot:
 if __name__ == "__main__":
     bot = Bot()
     bot.start()
+
+# UnboundLocalError: local variable 'message' referenced before assignment
