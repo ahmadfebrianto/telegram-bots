@@ -132,3 +132,4 @@ dmypy.json
 **/**/*.session
 **/**/patterns.txt
 **/**/groups.txt
+**/**/*.txt
