@@ -1,2 +1,2 @@
 # telegram_bots
-A collection of stupid bots I created when I am drunk
+A collection of useless bots I created for fun.
