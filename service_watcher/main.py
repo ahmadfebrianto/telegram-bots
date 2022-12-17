@@ -102,12 +102,11 @@ class Bot:
             if self.service.status:
                 if not all(self.service.status.values()):
                     message = Message(self.service.status, "alert")
-                else:
-                    continue
+                    await event.respond(message)
             else:
                 message = "No services to watch."
+                await event.respond(message)
 
-            await event.respond(message)
             await sleep(5)
 
     def start(self):
