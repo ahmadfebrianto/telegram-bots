@@ -130,3 +130,5 @@ dmypy.json
 
 # Telethon session
 **/**/*.session
+**/**/patterns.txt
+**/**/groups.txt
