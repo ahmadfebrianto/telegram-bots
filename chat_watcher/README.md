@@ -1,6 +1,6 @@
 # Chat Watcher
 
-A simple bot that watches for messages in a Telegram chat. If it detects a message with a specific keyword, it will copy the message to `Saved Messages`.
+A simple bot that watches for messages in a Telegram chat or groups you are in. If it detects a message with a specific keyword, it will copy the message to `Saved Messages`.
 
 ## Setup
 
@@ -21,3 +21,8 @@ A simple bot that watches for messages in a Telegram chat. If it detects a messa
    ```bash
    python3 main.py
    ```
+
+## Special notes
+
+- This bot can be used to copy certain messages from a group where the `forward feature` is `disabled`.
+- This bot acts on your behalf. That means not bot (created by BotFather) is required to be added to the group. It will work even if you are not an admin in the group.
