@@ -1,6 +1,6 @@
 # Service Watcher
 
-A simple bot that watches for Systemd services status. If it detects a service is down, it will send a message.
+A simple bot that watches for `Systemd` services status. If it detects a service is down, it will send a message.
 
 ## Setup
 
@@ -16,7 +16,7 @@ A simple bot that watches for Systemd services status. If it detects a service i
 
 4. Get your Telegram user ID and save it in an environment variable called `TG_USER_ID`. You can do this by sending message to [userinfobot](https://t.me/userinfobot).
 
-5. Add services to watch in services.txt. Each service should be on a new line.
+5. Add services to watch in `services.txt`. Each service should be on a new line.
 
 6. Run the script
 
