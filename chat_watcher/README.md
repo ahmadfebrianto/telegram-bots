@@ -25,8 +25,8 @@ A simple bot that watches for messages in a Telegram chat or groups you are in. 
 ## Special notes
 
 - This bot can be used to copy certain messages from a group where the `forward feature` is `disabled`.
-- This bot acts on your behalf. That means not bot (created by BotFather) is required to be added to the group. It will work even if you are not an admin in the group.
+- This bot acts on your behalf. In other words, it runs your Telegram account. So, use it at your own risk.
 
 ## Use cases
 
-- I used this bot to grab vouchers, coupons, license keys, and other useful and juicy stuff shared in a group where the forward feature is disabled.
+- This bot can be used to grab vouchers, coupons, license keys, and other useful and juicy stuff shared in Telegram groups.
