@@ -18,7 +18,7 @@ def read_file(filename):
 async def get_group_ids(client):
     group_ids = []
     async for dialog in client.iter_dialogs():
-        group_and_id = f"{dialog.name} {dialog.id}"
+        group_and_id = f"{dialog.entity.id} # {dialog.name}"
         group_ids.append(group_and_id)
 
     return group_ids
