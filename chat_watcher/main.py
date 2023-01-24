@@ -44,7 +44,12 @@ def main():
         for pattern in patterns:
             match = re.search(r"" + pattern, text, re.IGNORECASE)
             if match:
-                await client.send_message("me", text)
+                message = (
+                    f"{text}"
+                    f"\n\n"
+                    f"https://t.me/c/{event.chat.id}/{event.message.id}"
+                )
+                await client.send_message("me", message)
                 break
 
     client.start()
